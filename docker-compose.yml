@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  mysql-db:
+    container_name: mysql-db
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: products
+      MYSQL_HOST: mysql-db
+    volumes:
+      - ./db:/var/lib/mysql
+    ports:
+      - '3306:3306'
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+    restart: always
+    depends_on:
+      - mysql-db
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/backend
+    environment:
+      DATABASE_URL: mysql+pymysql://root:password@mysql-db:3306/products
+      FLASK_ENV: development
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
