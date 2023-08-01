@@ -10,7 +10,7 @@ services:
       MYSQL_DATABASE: products
       MYSQL_HOST: mysql-db
     volumes:
-      - ./db:/var/lib/mysql
+      - ./db/data:/var/lib/mysql
     ports:
       - '3306:3306'
 
@@ -29,7 +29,17 @@ services:
       DATABASE_URL: mysql+pymysql://root:password@mysql-db:3306/products
       FLASK_ENV: development
 
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - '3000:3000'
+
   adminer:
+    container_name: adminer
     image: adminer
     restart: always
     ports:
