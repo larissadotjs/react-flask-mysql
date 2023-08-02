@@ -1,9 +1,11 @@
 import time
 import pymysql
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 while True:
     try:
@@ -24,6 +26,16 @@ class Product(db.Model):
     yearly_return = db.Column(db.String(200), nullable=False)
     payment_deadline = db.Column(db.String(120), nullable=False)
 
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'financial_instrument': self.financial_instrument,
+            'prod_description': self.prod_description,
+            'yearly_return': self.yearly_return,
+            'payment_deadline': self.payment_deadline,
+        }
+
     def __repr__(self):
         return f'<Product {self.name} - {self.financial_instrument}>'
     
@@ -32,15 +44,13 @@ class Product(db.Model):
 
 @app.route('/', methods=['GET'])
 def hello():
-  return make_response(jsonify({'message': 'hello bloxs!'}), 200)
+  return jsonify({'message': 'hello bloxs!'})
     
-@app.route('/products', methods=['GET'])
+@app.route('/api/data', methods=['GET'])
 def get_products():
-  try:
     products = Product.query.all()
-    return make_response(jsonify([product.json() for product in products]), 200)
-  except:
-    return make_response(jsonify({'message': 'error getting products'}), 500)
+    product_list = [product.as_dict() for product in products]
+    return jsonify(product_list)
 
 with app.app_context():
     db.create_all()
